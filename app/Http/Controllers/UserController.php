@@ -5,6 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use DataTables;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Nette\Utils\Json;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -15,7 +20,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        return view('admin.userManagement');
+        return view('admin.user.userManagement');
     }
     public function loadData(Request $request)
     {
@@ -24,10 +29,9 @@ class UserController extends Controller
             return Datatables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
-
-                    $btn = '<div class="col"><button id="btn_edit" class="btn_edit btn btn-primary btn-lg btn-sm" data-id="' . $row->id . '" ><i class="fas fa-edit"></i></button>';
-                    $btn = $btn . '<button id="btn-delete" class="btn-delete btn-primary btn btn-danger btn-sm" data-id="' . $row->id . '" ><i class="fas fa-trash"></i></button>';
-                    return $btn;
+                        $btn = '<div class="col"><button id="btn_edit" class="btn_edit btn btn-primary btn-lg btn-sm" data-id="' . $row->id . '" ><i class="fas fa-edit"></i></button>';
+                        $btn = $btn . '<button id="btn-delete" class="btn-delete btn-primary btn btn-danger btn-sm" data-id="' . $row->id . '" ><i class="fas fa-trash"></i></button>';
+                        return $btn;
                 })
                 ->rawColumns(['action'])
                 ->make(true);
@@ -40,7 +44,8 @@ class UserController extends Controller
      */
     public function create()
     {
-        //
+        $roles = Role::pluck('name','name')->all();
+        return view('admin.user.createUser',compact('roles'));
     }
 
     /**
@@ -51,7 +56,11 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->all();
+        $data['password'] = Hash::make($data['password']);
+        $user = User::create($data);
+        $user->assignRole($request->input('roles'));
+        return response()->json("data inserted");
     }
 
     /**
@@ -73,7 +82,10 @@ class UserController extends Controller
      */
     public function edit($id)
     {
-        //
+        $user = User::find($id);
+        $roles = Role::pluck('name','name')->all();
+        $userRole = $user->roles->pluck('name','name')->all();
+        return view('admin.user.editUser',compact('user','roles','userRole'));
     }
 
     /**
@@ -83,9 +95,14 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        //
+        $data = $request->all();
+        $user = User::find($request->id);
+        $user->update($data);
+        DB::table('model_has_roles')->where('model_id',$request->id)->delete();
+        $user->assignRole($request->input('roles'));
+        return response()->json("data updated");
     }
 
     /**
@@ -94,8 +111,9 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request)
     {
-        //
+        User::where('id', $request->id)->delete();
+        return response()->json("data deleted");
     }
 }

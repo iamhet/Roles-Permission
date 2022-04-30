@@ -14,7 +14,9 @@
     <script src="{{ asset('js/app.js') }}" defer></script>
     <script src="{{ asset('js/sidebars.js') }}" defer></script>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+        integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
@@ -24,9 +26,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"
-    integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <link href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src='//cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js'></script>
+    <link rel='stylesheet' href='//cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css'>
+
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('css/sidebars.css') }}" rel="stylesheet">
@@ -82,7 +85,7 @@
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                     <a class="dropdown-item" href="{{ route('logout') }}"
                                         onclick="event.preventDefault();
-                                                                                 document.getElementById('logout-form').submit();">
+                                                                                         document.getElementById('logout-form').submit();">
                                         {{ __('Logout') }}
                                     </a>
 
@@ -100,40 +103,55 @@
         <div>
         </div>
         @yield('content')
-        @if(Auth::user())
-        
-        <div class="d-flex" id="wrapper">
-            <!-- Sidebar -->
-            <div class="bg-light border-right" id="sidebar-wrapper">
-                <div class="sidebar-heading">Laravel </div>
-                <div class="list-group list-group-flush">
-                    <a href="{{ route('home') }}" class="list-group-item list-group-item-action bg-light">Dashboard</a>
-                    <a href="#" class="list-group-item list-group-item-action bg-light">Shortcuts</a>
-                    <a href="#" class="list-group-item list-group-item-action bg-light">Overview</a>
-                    <a href="#" class="list-group-item list-group-item-action bg-light">Events</a>
-                    <a href="#" class="list-group-item list-group-item-action bg-light">Profile</a>
+        @if (Auth::user())
 
-                    <a href="#submenu1" data-bs-toggle="collapse" class="list-group-item list-group-item-action bg-light">
-                        <i class="fs-4 bi-speedometer2"></i> <span class="ms-1 d-none d-sm-inline">Setting</span> </a>
-                    <ul class="collapse  nav flex-column list-group-item list-group-item-action bg-light" id="submenu1"
-                        data-bs-parent="#menu">
-                        <li class="w-100">
-                            <a href="{{ route('user.index') }}" class="nav-link px-0"> <span
-                                    class="d-none d-sm-inline">User
-                                    Management</span></a>
-                        </li>
-                        <li>
-                            <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline">Role
-                                    Management</span></a>
-                        </li>
-                    </ul>
+            <div class="d-flex" id="wrapper">
+                <!-- Sidebar -->
+                @if (Auth::check())
+                    <div class="bg-light border-right" id="sidebar-wrapper">
+                        <div class="sidebar-heading">Laravel </div>
+                        <div class="list-group list-group-flush">
+                            @can('dashboard')
+                                <a href="{{ route('home') }}"
+                                    class="list-group-item list-group-item-action bg-light">Dashboard</a>
+                            @endcan
+                            @can('module1-view')
+                                <a href="{{ route('module1.index') }}"
+                                    class="list-group-item list-group-item-action bg-light">Module-1</a>
+                            @endcan
+                            @can('module2-view')
+                                <a href="{{ route('module2.index') }}"
+                                    class="list-group-item list-group-item-action bg-light">Module-2</a>
+                            @endcan
+                            @can('module3-view')
+                                <a href="#" class="list-group-item list-group-item-action bg-light">Module-3</a>
+                            @endcan
+
+                            <a href="#submenu1" data-bs-toggle="collapse"
+                                class="list-group-item list-group-item-action bg-light">
+                                <i class="fs-4 bi-speedometer2"></i> <span
+                                    class="ms-1 d-none d-sm-inline">Setting</span> </a>
+                            <ul class="collapse  nav flex-column list-group-item list-group-item-action bg-light"
+                                id="submenu1" data-bs-parent="#menu">
+                                    <li class="w-100">
+                                        <a href="{{ route('user.index') }}" class="nav-link px-0"> <span
+                                                class="d-none d-sm-inline">User
+                                                Management</span></a>
+                                    </li>
+                                <li>
+                                    <a href="{{ route('role.index') }}" class="nav-link px-0"> <span
+                                            class="d-none d-sm-inline">Role
+                                            Management</span></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                @endif
+                <div id="page-content-wrapper">
+                    @yield('maincontent')
+                    @yield('js')
                 </div>
             </div>
-            <div id="page-content-wrapper">
-                @yield('maincontent')
-                @yield('js')
-            </div>
-        </div>
     </div>
     @endif
 </body>

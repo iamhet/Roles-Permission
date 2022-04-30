@@ -31,7 +31,7 @@ body {
       width: 100%;
   }
   .toggle{
-      margin-left: -180px;
+      margin-left: -100px;
   }
   #wrapper.toggled #sidebar-wrapper {
       margin-left: -15rem;
