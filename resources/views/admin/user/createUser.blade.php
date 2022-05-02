@@ -22,7 +22,27 @@
                 @endforeach
             </select>
         </div>
-        
+        <div class="permission">
+            <div class="container">
+                <div class="form-group">
+                    <label for="exampleInputEmail1" class="form-label">Permission:</label>
+                    <br />
+                    @foreach ($permission as $value)
+                        <label>
+                        @if (in_array($value->id, $rolePermissions))
+                            <input type="checkbox" name="{{ 'permission[]' }}" value="{{ $value->id }}" checked />
+                                 {{ $value->name }}
+                        @endif
+                        @if (!in_array($value->id, $rolePermissions))
+                              <input type="checkbox" name="{{ 'permission[]' }}" value="{{ $value->id }}" />                                  {{ $value->name }}
+                        @endif
+                        </label>
+                        <br/>
+                     @endforeach
+                </div>
+             </div></br>
+            <h1>Permission</h1>
+        </div>
     </div>
     
     <div class="container">
@@ -30,6 +50,26 @@
     </div>
 </form>
 <script type="text/javascript">
+    $(document).ready(function () {
+        $('.permission').hide();        
+    });
+    $('#roles').on("change", function () {
+        var data = $(this).serialize();
+        $.ajax({
+            type: "post",
+            url: "{{route('user.getpermission')}}",
+            data : data,
+            dataType : 'json',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function (response) {
+                console.log(response);
+                $('.permission').show();
+            }
+        });
+        
+    });
     $('.user_create').on('submit', function(e) {
         e.preventDefault();
         var action = $(this).attr('action');

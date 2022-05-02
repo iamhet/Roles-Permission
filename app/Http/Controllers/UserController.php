@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use DataTables;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Response;
 use Nette\Utils\Json;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -115,5 +116,16 @@ class UserController extends Controller
     {
         User::where('id', $request->id)->delete();
         return response()->json("data deleted");
+    }
+
+    public function getpermission(Request $request)
+    {
+        $role = Role::where('name','=',$request->roles)->first();
+        $permission = Permission::get();
+        $rolePermissions = DB::table("role_has_permissions")->where("role_has_permissions.role_id", $role->id)
+            ->pluck('role_has_permissions.permission_id')
+            ->all();
+
+        return Response::json(['permission'=>$permission,'rolePermissions'=>$rolePermissions]);;
     }
 }

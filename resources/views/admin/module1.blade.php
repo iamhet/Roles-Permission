@@ -16,12 +16,15 @@
                         </ol>
                     </div><!-- /.col -->
                 </div><!-- /.row -->
-                @can('module1-create')
+                @if (Auth::check())
                     
+                @can('module1-create')
+                
                 <button type="button" class="btn btn-success " id="btn_create">
                     Create +
                 </button>
                 @endcan
+                @endif
             </div>
         </div>
         <br>

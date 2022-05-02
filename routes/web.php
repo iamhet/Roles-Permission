@@ -41,6 +41,7 @@ Route::controller(UserController::class)->group(function () {
     Route::get('edituser/{id}', 'edit');
     Route::post('deleteuser', 'destroy')->name('user.destroy');
     Route::post('updateuser', 'update')->name('user.update');
+    Route::post('getpermission', 'getpermission')->name('user.getpermission');
 
 });
 Route::controller(Module1Controller::class)->group(function () {
