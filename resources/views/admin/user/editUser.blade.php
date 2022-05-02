@@ -25,12 +25,90 @@
             @endforeach
         </div>
     </div></br>
+    <div class="permission">
+            <div class="container">
+                <div class="form-group">
+                    <label for="exampleInputEmail1" class="form-label">Permission:</label>
+                    <br />
+                    <label>
+                        <div class="edit-permisison">
+                        
+                        </div>
+                        </label>
+                        <br/>
+                </div>
+             </div></br>
+        </div>
     <div class="container">
         <button type="submit" class="btn btn-primary">Update</button>
     </div>
 </form>
 
 <script type="text/javascript">
+$('#roles').on("change", function () {
+        var data = $(this).serialize();
+        $.ajax({
+            type: "post",
+            url: "{{route('user.getpermission')}}",
+            data : data,
+            dataType : 'json',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function (response) {
+                var data = [];
+                var length =(response.rolePermissions).length;
+                var i;
+                $.each(response.permission, function (key, value) { 
+                            
+                    if($.inArray(value['id'],response.rolePermissions)!== -1) 
+                    {
+                        data.push('<input type="checkbox" class="form-control-select" name="permission[]" value='+value['name']+' checked /> '+value['name']+'<br>');
+                    }
+                    else{
+                        data.push('<input type="checkbox" class="form-control-select" name="permission[]" value='+value['name']+'  /> '+value['name']+'<br>');
+                    }     
+                    // data.push(element);
+                });
+                $('.permission').show();
+                $('.edit-permisison').html(data);
+            }
+        });
+        
+    });
+    $(document).ready(function () {
+        $('.permission').hide();        
+        var data = $('#roles').val();
+        var data1 = {roles : data};
+
+        $.ajax({
+            type: "post",
+            url: "{{route('user.getpermission')}}",
+            data : data1,
+            dataType : 'json',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function (response) {
+                var data = [];
+                var length =(response.rolePermissions).length;
+                var i;
+                $.each(response.permission, function (key, value) { 
+                            
+                    if($.inArray(value['id'],response.rolePermissions)!== -1) 
+                    {
+                        data.push('<input type="checkbox" class="form-control-select" name="permission[]" value='+value['name']+' checked /> '+value['name']+'<br>');
+                    }
+                    else{
+                        data.push('<input type="checkbox" class="form-control-select" name="permission[]" value='+value['name']+'  /> '+value['name']+'<br>');
+                    }     
+                    // data.push(element);
+                });
+                $('.permission').show();
+                $('.edit-permisison').html(data);
+            }
+        });
+    });
     $('.edit_user').on('submit', function(e) {
         e.preventDefault();
         var action = $(this).attr('action');

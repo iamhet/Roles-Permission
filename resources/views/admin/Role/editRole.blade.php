@@ -9,6 +9,9 @@
         </div>
     </div>
     <div class="container">
+        Update all Users's permission who use this role <input type="checkbox" name="change" class="form-control-select" value="true"/>
+    </div><br><br>
+    <div class="container">
         <div class="form-group">
             <label for="exampleInputEmail1" class="form-label">Permission:</label>
             <br />

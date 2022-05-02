@@ -26,19 +26,20 @@
     $('.role_create').on('submit', function(e) {
         e.preventDefault();
         var action = $(this).attr('action');
-        $.ajax({
-            type: "post",
-            url: "{{ route('role.store') }}",
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            data: $(this).serialize(),
-            dataType: "json",
-        }).done(function() {
-            $('#btn_create').show();
-            $('.main_content').show();
-            $('.Role_Datatables').DataTable().ajax.reload();
-            $('.form').hide();
-        });
+        console.log($(this).serialize());
+        // $.ajax({
+        //     type: "post",
+        //     url: "{{ route('role.store') }}",
+        //     headers: {
+        //         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        //     },
+        //     data: $(this).serialize(),
+        //     dataType: "json",
+        // }).done(function() {
+        //     $('#btn_create').show();
+        //     $('.main_content').show();
+        //     $('.Role_Datatables').DataTable().ajax.reload();
+        //     $('.form').hide();
+        // });
     });
 </script>

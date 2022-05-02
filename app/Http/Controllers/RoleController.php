@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use DataTables;
@@ -96,10 +97,35 @@ class RoleController extends Controller
      */
     public function update(Request $request)
     {
-        $role = Role::find($request->id);
-        $role->name = $request->name;
-        $role->save();
-        $role->syncPermissions($request->input('permission'));
+        if($request->change == true)
+        {
+            $role = Role::find($request->id);
+            $role->name = $request->name;
+            $role->save();
+            $role->syncPermissions($request->input('permission'));
+        }
+        else{
+            $role = Role::find($request->id);
+            $rolePermissions = DB::table("role_has_permissions")->where("role_has_permissions.role_id", $role->id)
+            ->pluck('role_has_permissions.permission_id')
+            ->all();
+            foreach ($rolePermissions as $k => $v) {
+                $permission = Permission::whereId($v)->first();
+                $data1[] = $permission->name;
+            }
+            $userPermissions = DB::table("model_has_roles")->where("role_id", $role->id)->pluck('model_id')->all();
+        
+            foreach ($userPermissions as $key => $value) {
+                $user = User::whereId($value)->get();
+                foreach ($data1 as $k => $v) {
+                    $user->givePermissionTo($v);
+                }
+                    
+            }
+            // $role->name = $request->name;
+            // $role->save();
+            // $role->syncPermissions($request->input('permission'));
+        }
         return response()->json('data updated');
     }
 

@@ -61,6 +61,23 @@ class UserController extends Controller
         $data['password'] = Hash::make($data['password']);
         $user = User::create($data);
         $user->assignRole($request->input('roles'));
+
+        $roles=Role::where('name','=',$request->roles)->first();
+        $rolePermissions = DB::table("role_has_permissions")->where("role_has_permissions.role_id", $roles->id)
+            ->pluck('role_has_permissions.permission_id')
+            ->all();
+            $data1 = [];
+            foreach ($rolePermissions as $k => $v) {
+                $permission = Permission::whereId($v)->first();
+                $data1[] = $permission->name;
+            }
+            foreach ($request->permission as $key => $value) {
+                if(!in_array($value,$data1))
+                {
+                    $user->givePermissionTo($value);
+                }
+                    
+            }
         return response()->json("data inserted");
     }
 
@@ -103,6 +120,22 @@ class UserController extends Controller
         $user->update($data);
         DB::table('model_has_roles')->where('model_id',$request->id)->delete();
         $user->assignRole($request->input('roles'));
+        $role = Role::where('name','=',$request->roles)->first();
+        $rolePermissions = DB::table("role_has_permissions")->where("role_has_permissions.role_id", $role->id)
+            ->pluck('role_has_permissions.permission_id')
+            ->all();
+            $data1 = [];
+            foreach ($rolePermissions as $k => $v) {
+                $permission = Permission::whereId($v)->first();
+                $data1[] = $permission->name;
+            }
+            foreach ($request->permission as $key => $value) {
+                if(!in_array($value,$data1))
+                {
+                    $user->givePermissionTo($value);
+                }
+                    
+            }
         return response()->json("data updated");
     }
 
@@ -125,7 +158,7 @@ class UserController extends Controller
         $rolePermissions = DB::table("role_has_permissions")->where("role_has_permissions.role_id", $role->id)
             ->pluck('role_has_permissions.permission_id')
             ->all();
-
+        
         return Response::json(['permission'=>$permission,'rolePermissions'=>$rolePermissions]);;
     }
 }

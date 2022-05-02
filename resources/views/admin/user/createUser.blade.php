@@ -27,21 +27,14 @@
                 <div class="form-group">
                     <label for="exampleInputEmail1" class="form-label">Permission:</label>
                     <br />
-                    @foreach ($permission as $value)
-                        <label>
-                        @if (in_array($value->id, $rolePermissions))
-                            <input type="checkbox" name="{{ 'permission[]' }}" value="{{ $value->id }}" checked />
-                                 {{ $value->name }}
-                        @endif
-                        @if (!in_array($value->id, $rolePermissions))
-                              <input type="checkbox" name="{{ 'permission[]' }}" value="{{ $value->id }}" />                                  {{ $value->name }}
-                        @endif
+                    <label>
+                        <div class="edit-permisison">
+                        
+                        </div>
                         </label>
                         <br/>
-                     @endforeach
                 </div>
              </div></br>
-            <h1>Permission</h1>
         </div>
     </div>
     
@@ -51,7 +44,36 @@
 </form>
 <script type="text/javascript">
     $(document).ready(function () {
-        $('.permission').hide();        
+        $('.permission').hide();  
+        var data = $('#roles').val();
+        var data1 = {roles : data};
+        $.ajax({
+            type: "post",
+            url: "{{route('user.getpermission')}}",
+            data : data1,
+            dataType : 'json',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function (response) {
+                var data = [];
+                var length =(response.rolePermissions).length;
+                var i;
+                $.each(response.permission, function (key, value) { 
+                            
+                    if($.inArray(value['id'],response.rolePermissions)!== -1) 
+                    {
+                        data.push('<input type="checkbox" class="form-control-select" name="permission[]" value='+value['name']+' checked /> '+value['name']+'<br>');
+                    }
+                    else{
+                        data.push('<input type="checkbox" class="form-control-select" name="permission[]" value='+value['name']+'  /> '+value['name']+'<br>');
+                    }     
+                    // data.push(element);
+                });
+                $('.permission').show();
+                $('.edit-permisison').html(data);
+            }
+        });      
     });
     $('#roles').on("change", function () {
         var data = $(this).serialize();
@@ -64,8 +86,22 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function (response) {
-                console.log(response);
+                var data = [];
+                var length =(response.rolePermissions).length;
+                var i;
+                $.each(response.permission, function (key, value) { 
+                            
+                    if($.inArray(value['id'],response.rolePermissions)!== -1) 
+                    {
+                        data.push('<input type="checkbox" class="form-control-select" name="permission[]" value='+value['name']+' checked /> '+value['name']+'<br>');
+                    }
+                    else{
+                        data.push('<input type="checkbox" class="form-control-select" name="permission[]" value='+value['name']+'  /> '+value['name']+'<br>');
+                    }     
+                    // data.push(element);
+                });
                 $('.permission').show();
+                $('.edit-permisison').html(data);
             }
         });
         
@@ -73,6 +109,7 @@
     $('.user_create').on('submit', function(e) {
         e.preventDefault();
         var action = $(this).attr('action');
+        console.log($(this).serialize());
         $.ajax({
             type: "post",
             url: action,
