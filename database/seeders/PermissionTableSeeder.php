@@ -2,9 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class PermissionTableSeeder extends Seeder
 {
@@ -37,9 +40,20 @@ class PermissionTableSeeder extends Seeder
             'user-edit',
             'user-delete',            
         ];
+        $roles = new Role();
+        $roles->name = "admin";
+        $roles->guard_name = "web";
+        $roles->save();
         foreach ($permissions as $permission) {
             Permission::create(['name' => $permission]);
         }
+        $roles->syncPermissions($permissions);
+        $user = new User();
+        $user->name = "admin";
+        $user->email = "admin@admin.com";
+        $user->password = Hash::make(123456789);
+        $user->save();
+        $user->assignRole("admin");
 
     }
 }
