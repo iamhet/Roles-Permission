@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use DataTables;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
 
@@ -24,12 +25,23 @@ class RoleController extends Controller
     {
         if ($request->ajax()) {
             $data = Role::all();
+            $user = Auth::user();
             return Datatables::of($data)
                 ->addIndexColumn()
-                ->addColumn('action', function ($row) {
-
-                    $btn = '<div class="col"><button id="btn_edit" class="btn_edit btn btn-primary btn-lg btn-sm" data-id="' . $row->id . '" ><i class="fas fa-edit"></i></button>';
-                    $btn = $btn . '<button id="btn-delete" class="btn-delete btn-primary btn btn-danger btn-sm" data-id="' . $row->id . '" ><i class="fas fa-trash"></i></button>';
+                ->addColumn('action', function ($row) use ($user){
+                    $btn = '';
+                    if($user->can('role-edit'))
+                    {
+                        $btn = '<div class="col"><button id="btn_edit" class="btn_edit btn btn-primary btn-lg btn-sm" data-id="' . $row->id . '" ><i class="fas fa-edit"></i></button>';
+                        if($user->can('role-delete'))
+                        {
+                            $btn = $btn . '<button id="btn-delete" class="btn-delete btn-primary btn btn-danger btn-sm" data-id="' . $row->id . '" ><i class="fas fa-trash"></i></button>';
+                        }
+                    
+                    }
+                    else{
+                        $btn = $btn . "<label> You don't have action Permission</label>";
+                    }
                     return $btn;
                 })
                 ->rawColumns(['action'])
@@ -117,14 +129,17 @@ class RoleController extends Controller
         
             foreach ($userPermissions as $key => $value) {
                 $user = User::whereId($value)->get();
+                $data = [];
                 foreach ($data1 as $k => $v) {
-                    $user->givePermissionTo($v);
+                    $data[] = $v;
                 }
-                    
+                $user->givePermissionTo($data);
+                $userRole = $user->getRoleNames();
+                $user->removeRole($userRole);
             }
-            // $role->name = $request->name;
-            // $role->save();
-            // $role->syncPermissions($request->input('permission'));
+            $role->name = $request->name;
+            $role->save();
+            $role->syncPermissions($request->input('permission'));
         }
         return response()->json('data updated');
     }

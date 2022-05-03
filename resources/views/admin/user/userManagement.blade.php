@@ -44,7 +44,9 @@
                                             <th>Id</th>
                                             <th>Item_Id</th>
                                             <th>Item_Name</th>
+                                            {{-- @canany('user-edit|user-delete')                                            --}}
                                             <th>Action</th>
+                                            {{-- @endcan --}}
                                         </tr>
                                     </thead>
                                     <tbody>

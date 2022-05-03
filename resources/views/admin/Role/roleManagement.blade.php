@@ -126,7 +126,7 @@
                             data: 'name',
                             name: 'name'
                         },
-                        {
+                        {   
                             data: 'action',
                             name: 'action',
                             orderable: false,

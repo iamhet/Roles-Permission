@@ -41,12 +41,14 @@
 
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">
-                <button class="btn btn-primary toggle" id="menu-toggle"><i class="fas fa-bars"></i></button>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
+                @if (Auth::user())
+                    <button class="btn btn-primary toggle" id="menu-toggle"><i class="fas fa-bars"></i></button>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse"
+                        data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                @endif
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
@@ -85,7 +87,7 @@
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                     <a class="dropdown-item" href="{{ route('logout') }}"
                                         onclick="event.preventDefault();
-                                                                                         document.getElementById('logout-form').submit();">
+                                                                                             document.getElementById('logout-form').submit();">
                                         {{ __('Logout') }}
                                     </a>
 
@@ -127,23 +129,25 @@
                                 <a href="#" class="list-group-item list-group-item-action bg-light">Module-3</a>
                             @endcan
 
-                            <a href="#submenu1" data-bs-toggle="collapse"
-                                class="list-group-item list-group-item-action bg-light">
-                                <i class="fs-4 bi-speedometer2"></i> <span
-                                    class="ms-1 d-none d-sm-inline">Setting</span> </a>
-                            <ul class="collapse  nav flex-column list-group-item list-group-item-action bg-light"
-                                id="submenu1" data-bs-parent="#menu">
+                            @canany(['user-delete', 'user-delete', 'role-delete', 'role-edit'])
+                                <a href="#submenu1" data-bs-toggle="collapse"
+                                    class="list-group-item list-group-item-action bg-light">
+                                    <i class="fs-4 bi-speedometer2"></i> <span
+                                        class="ms-1 d-none d-sm-inline">Setting</span> </a>
+                                <ul class="collapse  nav flex-column list-group-item list-group-item-action bg-light"
+                                    id="submenu1" data-bs-parent="#menu">
                                     <li class="w-100">
                                         <a href="{{ route('user.index') }}" class="nav-link px-0"> <span
                                                 class="d-none d-sm-inline">User
                                                 Management</span></a>
                                     </li>
-                                <li>
-                                    <a href="{{ route('role.index') }}" class="nav-link px-0"> <span
-                                            class="d-none d-sm-inline">Role
-                                            Management</span></a>
-                                </li>
-                            </ul>
+                                    <li>
+                                        <a href="{{ route('role.index') }}" class="nav-link px-0"> <span
+                                                class="d-none d-sm-inline">Role
+                                                Management</span></a>
+                                    </li>
+                                </ul>
+                            @endcanany
                         </div>
                     </div>
                 @endif

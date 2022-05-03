@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use DataTables;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Response;
-use Nette\Utils\Json;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -19,6 +19,7 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    static public $userid = 8;
     public function index()
     {
         return view('admin.user.userManagement');
@@ -27,12 +28,23 @@ class UserController extends Controller
     {
         if ($request->ajax()) {
             $data = User::all();
+            $user = Auth::user();
             return Datatables::of($data)
                 ->addIndexColumn()
-                ->addColumn('action', function ($row) {
+                ->addColumn('action', function ($row) use ($user){
+                    $btn = '';
+                    if($user->can('user-edit'))
+                    {
                         $btn = '<div class="col"><button id="btn_edit" class="btn_edit btn btn-primary btn-lg btn-sm" data-id="' . $row->id . '" ><i class="fas fa-edit"></i></button>';
-                        $btn = $btn . '<button id="btn-delete" class="btn-delete btn-primary btn btn-danger btn-sm" data-id="' . $row->id . '" ><i class="fas fa-trash"></i></button>';
-                        return $btn;
+                        if($user->can('user-delete'))
+                        {
+                            $btn = $btn . '<button id="btn-delete" class="btn-delete btn-primary btn btn-danger btn-sm" data-id="' . $row->id . '" ><i class="fas fa-trash"></i></button>';
+                        }
+                    }
+                    else{
+                        $btn = $btn . "<label> You don't have action Permission</label>";
+                    }
+                    return $btn;
                 })
                 ->rawColumns(['action'])
                 ->make(true);
@@ -45,8 +57,8 @@ class UserController extends Controller
      */
     public function create()
     {
-        $roles = Role::pluck('name','name')->all();
-        return view('admin.user.createUser',compact('roles'));
+        $roles = Role::pluck('name', 'name')->all();
+        return view('admin.user.createUser', compact('roles'));
     }
 
     /**
@@ -62,22 +74,20 @@ class UserController extends Controller
         $user = User::create($data);
         $user->assignRole($request->input('roles'));
 
-        $roles=Role::where('name','=',$request->roles)->first();
+        $roles = Role::where('name', '=', $request->roles)->first();
         $rolePermissions = DB::table("role_has_permissions")->where("role_has_permissions.role_id", $roles->id)
             ->pluck('role_has_permissions.permission_id')
             ->all();
-            $data1 = [];
-            foreach ($rolePermissions as $k => $v) {
-                $permission = Permission::whereId($v)->first();
-                $data1[] = $permission->name;
+        $data1 = [];
+        foreach ($rolePermissions as $k => $v) {
+            $permission = Permission::whereId($v)->first();
+            $data1[] = $permission->name;
+        }
+        foreach ($request->permission as $key => $value) {
+            if (!in_array($value, $data1)) {
+                $user->givePermissionTo($value);
             }
-            foreach ($request->permission as $key => $value) {
-                if(!in_array($value,$data1))
-                {
-                    $user->givePermissionTo($value);
-                }
-                    
-            }
+        }
         return response()->json("data inserted");
     }
 
@@ -100,10 +110,11 @@ class UserController extends Controller
      */
     public function edit($id)
     {
+        self::$userid = $id;
         $user = User::find($id);
-        $roles = Role::pluck('name','name')->all();
-        $userRole = $user->roles->pluck('name','name')->all();
-        return view('admin.user.editUser',compact('user','roles','userRole'));
+        $roles = Role::pluck('name', 'name')->all();
+        $userRole = $user->roles->pluck('name', 'name')->all();
+        return view('admin.user.editUser', compact('user', 'roles', 'userRole'));
     }
 
     /**
@@ -117,25 +128,40 @@ class UserController extends Controller
     {
         $data = $request->all();
         $user = User::find($request->id);
+
         $user->update($data);
-        DB::table('model_has_roles')->where('model_id',$request->id)->delete();
+        DB::table('model_has_roles')->where('model_id', $request->id)->delete();
         $user->assignRole($request->input('roles'));
-        $role = Role::where('name','=',$request->roles)->first();
+        $role = Role::where('name', '=', $request->roles)->first();
         $rolePermissions = DB::table("role_has_permissions")->where("role_has_permissions.role_id", $role->id)
             ->pluck('role_has_permissions.permission_id')
             ->all();
-            $data1 = [];
-            foreach ($rolePermissions as $k => $v) {
-                $permission = Permission::whereId($v)->first();
-                $data1[] = $permission->name;
+        $data1 = [];
+        foreach ($rolePermissions as $k => $v) {
+            $permission = Permission::whereId($v)->first();
+            $data1[] = $permission->name;
+        }
+        $userPermission = [];
+        $modelHasPermission = DB::table('model_has_permissions')->where('model_id', $user->id)->pluck('permission_id')->all();
+        foreach ($modelHasPermission as $key => $value) {
+            $p = Permission::whereId($value)->first();
+            $userPermission[] = $p->name;
+        }
+        $extraPermission = [];
+        foreach ($request->permission as $key => $value) {
+            if (!in_array($value, $data1)) {
+                $extraPermission[] = $value;
             }
-            foreach ($request->permission as $key => $value) {
-                if(!in_array($value,$data1))
-                {
-                    $user->givePermissionTo($value);
-                }
-                    
+        }
+        foreach ($userPermission as $key => $value) {
+            if (!in_array($value, $extraPermission)) {
+                $user->revokePermissionTo($value);
             }
+        }
+        foreach ($extraPermission as $key => $value) {
+            $user->givePermissionTo($value);
+        }
+
         return response()->json("data updated");
     }
 
@@ -147,18 +173,27 @@ class UserController extends Controller
      */
     public function destroy(Request $request)
     {
+        DB::table('model_has_permissions')->where('model_id', $request->id)->delete();
         User::where('id', $request->id)->delete();
         return response()->json("data deleted");
     }
 
     public function getpermission(Request $request)
     {
-        $role = Role::where('name','=',$request->roles)->first();
+        if ($request->userid) {
+            $userPermission = DB::table('model_has_permissions')->where('model_id', $request->userid)->pluck('permission_id')->all();
+        }
+        $role = Role::where('name', '=', $request->roles)->first();
         $permission = Permission::get();
         $rolePermissions = DB::table("role_has_permissions")->where("role_has_permissions.role_id", $role->id)
             ->pluck('role_has_permissions.permission_id')
             ->all();
-        
-        return Response::json(['permission'=>$permission,'rolePermissions'=>$rolePermissions]);;
+        if ($request->userid) {
+            return Response::json(['permission' => $permission, 'rolePermissions' => $rolePermissions , 'userPermission' => $userPermission]);;
+        }
+        else
+        {
+            return Response::json(['permission' => $permission, 'rolePermissions' => $rolePermissions]);;
+        }
     }
 }
